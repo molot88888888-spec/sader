@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+find_package(OpenSSL REQUIRED)
+
+# ---------- Основная программа ----------
 add_executable(sader
     src/main.cpp
     src/CommandParser.cpp
@@ -17,7 +20,9 @@ add_executable(sader
 )
 
 target_include_directories(sader PRIVATE include)
+target_link_libraries(sader PRIVATE OpenSSL::Crypto)
 
+# ---------- Тест TextWorker ----------
 add_executable(test_textworker
     tests/test_textworker.cpp
     src/TextWorker.cpp
@@ -25,9 +30,19 @@ add_executable(test_textworker
 
 target_include_directories(test_textworker PRIVATE include)
 
+# ---------- Тест FileWorker ----------
 add_executable(test_fileworker
     tests/test_fileworker.cpp
     src/FileWorker.cpp
 )
 
 target_include_directories(test_fileworker PRIVATE include)
+
+# ---------- Тест HashWorker ----------
+add_executable(test_hashworker
+    tests/test_hashworker.cpp
+    src/HashWorker.cpp
+)
+
+target_include_directories(test_hashworker PRIVATE include)
+target_link_libraries(test_hashworker PRIVATE OpenSSL::Crypto)
