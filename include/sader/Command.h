@@ -1,20 +1,31 @@
 #pragma once
 
+#include <map>
 #include <string>
+#include <variant>
 
-// Тип команды, которую ввёл пользователь.
-// enum class (а не просто enum) — значения не «протекают» наружу
-// как int'ы, их нельзя случайно сравнить с числом.
-enum class CommandType {
-    Discover,
-    Describe,
-    Call
+// DiscoverCommand — результат разбора "DISCOVER <query>".
+struct DiscoverCommand {
+    std::string query;
 };
 
-// Command — внутреннее представление команды SADER.
-// Это просто значение: struct с двумя полями, никаких ресурсов,
-// никаких ручных деструкторов. Rule of Zero.
-struct Command {
-    CommandType type;
-    std::string argument;  // std::string, потому что Command владеет аргументом
+// DescribeCommand — результат разбора "DESCRIBE <name>".
+struct DescribeCommand {
+    std::string worker_name;
 };
+
+// CallCommand — результат разбора "CALL <worker> <operation> <args...>".
+// Например: CALL text length --text=hello
+//   worker_name = "text"
+//   operation   = "length"
+//   args        = { "text": "hello" }
+struct CallCommand {
+    std::string worker_name;
+    std::string operation;
+    std::map<std::string, std::string> args;
+};
+
+// Command — это ОДНА из трёх команд.
+// std::variant гарантирует: в любой момент там ровно один вариант,
+// не ноль и не больше одного.
+using Command = std::variant<DiscoverCommand, DescribeCommand, CallCommand>;

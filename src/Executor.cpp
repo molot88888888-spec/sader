@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <utility>
+#include <variant>
 
 void Executor::addWorker(std::unique_ptr<Worker> worker) {
     // std::move передаёт владение в vector.
@@ -37,13 +38,22 @@ void Executor::discover(std::string_view query) const {
 }
 
 void Executor::execute(const Command& command) const {
-    switch (command.type) {
-        case CommandType::Discover:
-            discover(command.argument);
-            return;
+    // Пробуем достать DiscoverCommand из variant'а.
+    // Если внутри именно он — get_if вернёт указатель, иначе nullptr.
+    if (const auto* d = std::get_if<DiscoverCommand>(&command)) {
+        discover(d->query);
+        return;
+    }
 
-        case CommandType::Describe:
-        case CommandType::Call:
-            throw std::runtime_error("Command is not implemented yet");
+    if (const auto* d = std::get_if<DescribeCommand>(&command)) {
+        // Пока не реализовано — заглушка. Реализуем на 2.4.3.
+        (void)d;  // подавляем warning об неиспользуемой переменной
+        throw std::runtime_error("DESCRIBE not implemented yet");
+    }
+
+    if (const auto* c = std::get_if<CallCommand>(&command)) {
+        // Пока не реализовано — заглушка.
+        (void)c;
+        throw std::runtime_error("CALL not implemented yet");
     }
 }
