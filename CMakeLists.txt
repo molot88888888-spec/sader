@@ -12,6 +12,7 @@ add_executable(sader
     src/Executor.cpp
     src/HashWorker.cpp
     src/FileWorker.cpp
+    src/TextWorker.cpp
 )
 
 target_include_directories(sader PRIVATE include)

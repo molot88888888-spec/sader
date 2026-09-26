@@ -7,6 +7,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include "sader/TextWorker.h"
 
 int main() {
     // Создаём Executor и регистрируем Worker'ов.
@@ -14,6 +15,7 @@ int main() {
     Executor executor;
     executor.addWorker(std::make_unique<HashWorker>());
     executor.addWorker(std::make_unique<FileWorker>());
+    executor.addWorker(std::make_unique<TextWorker>());
 
     std::string line;
 
