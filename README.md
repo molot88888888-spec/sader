@@ -1,3 +1,4 @@
+[table-a9e6050c-e1b8-46f1-8e3d-cb821c04f945.csv](https://github.com/user-attachments/files/32684046/table-a9e6050c-e1b8-46f1-8e3d-cb821c04f945.csv)
 # SADER — Self-describing Discoverable Execution Runtime
 
 Учебный проект по C++20: слой между AI-агентом и набором инструментов (Worker'ов), предоставляющий единый детерминированный протокол для поиска, описания и вызова операций.
@@ -42,20 +43,15 @@ AI Agent / User
                   Result
               (success + value | error)
 Ключевые компоненты
-Компонент
-Ответственность
-CommandParser
-Разбирает текст из stdin в структурированный Command
-Command
-std::variant из DiscoverCommand, DescribeCommand, CallCommand
-Executor
-Хранит vector<unique_ptr<Worker>>, находит Worker'ов по имени, выполняет команды
-Worker
-Абстрактный интерфейс: name(), description(), schema(), execute()
-Result
-Структурированный ответ: либо ok(value), либо fail(error)
-Schema
-Набор ArgumentSpec — контракт Worker'а
+Компонент,Ответственность
+CommandParser,Разбирает текст из stdin в структурированный Command
+Command,std::variant из DiscoverCommand", "DescribeCommand", "CallCommand
+Executor,Хранит vector<unique_ptr<Worker>>", находит Worker'ов по имени, выполняет команды"
+Worker,Абстрактный интерфейс: name()", "description()", "schema()", "execute()
+Result,Структурированный ответ: либо ok(value)", либо "fail(error)
+Schema,Набор ArgumentSpec — контракт Worker'а
+[table-a9e6050c-e1b8-46f1-8e3d-cb821c04f945.csv](https://github.com/user-attachments/files/32684103/table-a9e6050c-e1b8-46f1-8e3d-cb821c04f945.csv)
+
 Реализованные Worker'ы
 #
 Worker
