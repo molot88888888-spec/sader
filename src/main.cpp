@@ -9,6 +9,7 @@
 #include <string>
 #include "sader/TextWorker.h"
 #include "sader/ModelWorker.h"
+#include "sader/CsvWorker.h"
 
 int main() {
     // Создаём Executor и регистрируем Worker'ов.
@@ -18,6 +19,7 @@ int main() {
     executor.addWorker(std::make_unique<FileWorker>());
     executor.addWorker(std::make_unique<TextWorker>());
     executor.addWorker(std::make_unique<ModelWorker>());
+    executor.addWorker(std::make_unique<CsvWorker>());
 
     std::string line;
 

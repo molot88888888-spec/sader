@@ -17,6 +17,7 @@ add_executable(sader
     src/FileWorker.cpp
     src/TextWorker.cpp
     src/ModelWorker.cpp
+    src/CsvWorker.cpp
     src/StringUtils.cpp
 )
 
@@ -54,3 +55,10 @@ add_executable(test_modelworker
 )
 
 target_include_directories(test_modelworker PRIVATE include)
+
+add_executable(test_csvworker
+    tests/test_csvworker.cpp
+    src/CsvWorker.cpp
+)
+
+target_include_directories(test_csvworker PRIVATE include)
