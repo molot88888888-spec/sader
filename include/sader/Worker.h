@@ -1,24 +1,32 @@
 #pragma once
 
+#include "Arguments.h"
+#include "Result.h"
+#include "Schema.h"
+
 #include <string_view>
 
 // Worker — абстрактный базовый класс для всех инструментов SADER.
-// Каждый конкретный Worker (HashWorker, FileWorker, ...) должен
-// унаследоваться от него и реализовать name() и description().
+//
+// Контракт Worker'а:
+//   - name()        — короткое имя ("hash", "text", ...)
+//   - description() — текстовое описание для DISCOVER
+//   - schema()      — какие аргументы принимает (для DESCRIBE)
+//   - execute()     — выполнить операцию (для CALL)
 class Worker {
 public:
-    // Имя Worker'а — короткий идентификатор, например "hash" или "file".
-    // Возвращаем string_view, потому что это просто литерал — копировать
-    // строку каждый раз не нужно.
     virtual std::string_view name() const noexcept = 0;
-
-    // Описание capability — по нему DISCOVER ищет подходящий Worker.
-    // Должно содержать ключевые слова, по которым пользователь
-    // (или AI-агент) может искать.
     virtual std::string_view description() const noexcept = 0;
 
-    // Виртуальный деструктор ОБЯЗАТЕЛЕН, когда мы удаляем объект
-    // производного класса через указатель на базовый (unique_ptr<Worker>).
-    // Без него деструктор наследника не вызовется — утечка.
+    // Возвращаем Schema по значению: это маленькая структура,
+    // копировать её дешевле, чем возиться с указателями/lifetime.
+    virtual Schema schema() const = 0;
+
+    // execute — выполняет операцию с переданными аргументами.
+    // Принимаем Arguments по const&, потому что не хотим копировать
+    // и не хотим менять аргументы. Возвращаем Result — структуру,
+    // которая говорит, успех это или ошибка.
+    virtual Result execute(const Arguments& args) const = 0;
+
     virtual ~Worker() = default;
 };
