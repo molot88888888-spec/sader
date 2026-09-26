@@ -17,3 +17,10 @@ add_executable(sader
 )
 
 target_include_directories(sader PRIVATE include)
+
+add_executable(test_textworker
+    tests/test_textworker.cpp
+    src/TextWorker.cpp
+)
+
+target_include_directories(test_textworker PRIVATE include)
