@@ -24,3 +24,10 @@ add_executable(test_textworker
 )
 
 target_include_directories(test_textworker PRIVATE include)
+
+add_executable(test_fileworker
+    tests/test_fileworker.cpp
+    src/FileWorker.cpp
+)
+
+target_include_directories(test_fileworker PRIVATE include)

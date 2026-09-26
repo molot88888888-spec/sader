@@ -2,6 +2,7 @@
 
 #include "Worker.h"
 
+// FileWorker — операции над файлами: read, size, exists.
 class FileWorker final : public Worker {
 public:
     std::string_view name() const noexcept override;
