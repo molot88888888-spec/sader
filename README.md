@@ -43,14 +43,13 @@ AI Agent / User
                   Result
               (success + value | error)
 Ключевые компоненты
-Компонент,Ответственность
-CommandParser,Разбирает текст из stdin в структурированный Command
-Command,std::variant из DiscoverCommand", "DescribeCommand", "CallCommand
-Executor,Хранит vector<unique_ptr<Worker>>", находит Worker'ов по имени, выполняет команды"
-Worker,Абстрактный интерфейс: name()", "description()", "schema()", "execute()
-Result,Структурированный ответ: либо ok(value)", либо "fail(error)
-Schema,Набор ArgumentSpec — контракт Worker'а
-[table-a9e6050c-e1b8-46f1-8e3d-cb821c04f945.csv](https://github.com/user-attachments/files/32684103/table-a9e6050c-e1b8-46f1-8e3d-cb821c04f945.csv)
+Компонент	Ответственность
+CommandParser	Разбирает текст из stdin в структурированный Command
+Command	std::variant из DiscoverCommand, DescribeCommand, CallCommand
+Executor	Хранит vector<unique_ptr<Worker>>, находит Worker'ов по имени, выполняет команды
+Worker	Абстрактный интерфейс: name(), description(), schema(), execute()
+Result	Структурированный ответ: либо ok(value), либо fail(error)
+Schema	Набор ArgumentSpec — контракт Worker'а
 
 Реализованные Worker'ы
 #
