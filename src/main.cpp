@@ -11,6 +11,7 @@
 #include "sader/ModelWorker.h"
 #include "sader/CsvWorker.h"
 #include "sader/JsonWorker.h"
+#include "sader/ProcessWorker.h"
 
 int main() {
     // Создаём Executor и регистрируем Worker'ов.
@@ -22,6 +23,7 @@ int main() {
     executor.addWorker(std::make_unique<ModelWorker>());
     executor.addWorker(std::make_unique<CsvWorker>());
     executor.addWorker(std::make_unique<JsonWorker>());
+    executor.addWorker(std::make_unique<ProcessWorker>());
 
     std::string line;
 

@@ -20,6 +20,7 @@ add_executable(sader
     src/CsvWorker.cpp
     src/StringUtils.cpp
     src/JsonWorker.cpp
+    src/ProcessWorker.cpp
 )
 
 target_include_directories(sader PRIVATE include)
@@ -70,3 +71,10 @@ add_executable(test_jsonworker
 )
 
 target_include_directories(test_jsonworker PRIVATE include)
+
+add_executable(test_processworker
+    tests/test_processworker.cpp
+    src/ProcessWorker.cpp
+)
+
+target_include_directories(test_processworker PRIVATE include)
