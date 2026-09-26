@@ -16,6 +16,7 @@ add_executable(sader
     src/HashWorker.cpp
     src/FileWorker.cpp
     src/TextWorker.cpp
+    src/ModelWorker.cpp
     src/StringUtils.cpp
 )
 
@@ -46,3 +47,10 @@ add_executable(test_hashworker
 
 target_include_directories(test_hashworker PRIVATE include)
 target_link_libraries(test_hashworker PRIVATE OpenSSL::Crypto)
+
+add_executable(test_modelworker
+    tests/test_modelworker.cpp
+    src/ModelWorker.cpp
+)
+
+target_include_directories(test_modelworker PRIVATE include)

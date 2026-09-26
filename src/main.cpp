@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include "sader/TextWorker.h"
+#include "sader/ModelWorker.h"
 
 int main() {
     // Создаём Executor и регистрируем Worker'ов.
@@ -16,6 +17,7 @@ int main() {
     executor.addWorker(std::make_unique<HashWorker>());
     executor.addWorker(std::make_unique<FileWorker>());
     executor.addWorker(std::make_unique<TextWorker>());
+    executor.addWorker(std::make_unique<ModelWorker>());
 
     std::string line;
 
