@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(OpenSSL REQUIRED)
+find_package(CURL REQUIRED)
 
 # ---------- Основная программа ----------
 add_executable(sader
@@ -21,10 +22,12 @@ add_executable(sader
     src/StringUtils.cpp
     src/JsonWorker.cpp
     src/ProcessWorker.cpp
+    src/HttpWorker.cpp
 )
 
 target_include_directories(sader PRIVATE include)
 target_link_libraries(sader PRIVATE OpenSSL::Crypto)
+target_link_libraries(sader PRIVATE CURL::libcurl)
 
 # ---------- Тест TextWorker ----------
 add_executable(test_textworker
@@ -78,3 +81,11 @@ add_executable(test_processworker
 )
 
 target_include_directories(test_processworker PRIVATE include)
+
+add_executable(test_httpworker
+    tests/test_httpworker.cpp
+    src/HttpWorker.cpp
+)
+
+target_include_directories(test_httpworker PRIVATE include)
+target_link_libraries(test_httpworker PRIVATE CURL::libcurl)
