@@ -83,6 +83,26 @@ Schema ModelWorker::schema() const {
     };
 }
 
+// L2-нормализация: v / ||v||, где ||v|| = sqrt(sum(v_i^2)).
+// Возвращает unit vector той же направленности.
+Result ModelWorker::normalize(const std::vector<double>& v) const {
+    if (v.empty()) {
+        return Result::fail("Empty vector");
+    }
+
+    const double n = norm(v);
+    if (n == 0.0) {
+        return Result::fail("Cannot normalize zero vector");
+    }
+
+    std::vector<double> result(v.size());
+    for (std::size_t i = 0; i < v.size(); ++i) {
+        result[i] = v[i] / n;
+    }
+
+    return Result::ok(formatVector(result));
+}
+
 Result ModelWorker::execute(const Arguments& args) const {
     const auto op_it = args.values.find("operation");
     if (op_it == args.values.end()) {
@@ -103,17 +123,9 @@ Result ModelWorker::execute(const Arguments& args) const {
         return Result::fail(std::string("Invalid vector a: ") + e.what());
     }
 
-    // normalize — только один вектор нужен.
+    // normalize — делегируем в отдельную функцию.
     if (operation == "normalize") {
-        const double n = norm(vec_a);
-        if (n == 0.0) {
-            return Result::fail("Cannot normalize zero vector");
-        }
-        std::vector<double> result(vec_a.size());
-        for (std::size_t i = 0; i < vec_a.size(); ++i) {
-            result[i] = vec_a[i] / n;
-        }
-        return Result::ok(formatVector(result));
+        return normalize(vec_a);
     }
 
     // dot и cosine — нужны два вектора.
