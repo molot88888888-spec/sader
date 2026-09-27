@@ -22,3 +22,10 @@ Makefile
 
 # OS
 .DS_Store
+# Coverage
+coverage.info
+coverage-filtered.info
+coverage-report/
+build-cov/
+*.gcda
+*.gcno
