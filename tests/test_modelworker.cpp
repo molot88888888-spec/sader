@@ -21,17 +21,82 @@ static bool approxEqual(double a, double b, double eps = 1e-9) {
 int main() {
     ModelWorker worker;
 
+    // ---------- Контракт Worker: name / description / schema ----------
+    {
+        check(worker.name() == "model", "name() == model");
+        check(!worker.description().empty(), "description() non-empty");
+
+        const Schema s = worker.schema();
+        check(s.arguments.size() == 3, "schema: 3 arguments");
+        check(s.arguments[0].name == "operation", "schema[0] is operation");
+        check(s.arguments[1].name == "a", "schema[1] is a");
+        check(s.arguments[2].name == "b", "schema[2] is b");
+    }
+
+    // ---------- normalize ----------
+
     // normalize([3,4]) = [0.6, 0.8]
     {
         Arguments args;
         args.values["operation"] = "normalize";
         args.values["a"] = "3,4";
         const Result r = worker.execute(args);
-        check(r.success, "normalize: success");
-        // Проверим, что результат начинается с "0.6" и содержит "0.8"
-        check(r.value.find("0.6") != std::string::npos, "normalize: contains 0.6");
-        check(r.value.find("0.8") != std::string::npos, "normalize: contains 0.8");
+        check(r.success, "normalize [3,4]: success");
+        check(r.value.find("0.6") != std::string::npos, "normalize [3,4]: contains 0.6");
+        check(r.value.find("0.8") != std::string::npos, "normalize [3,4]: contains 0.8");
     }
+
+    // normalize([1,0]) = [1,0]
+    {
+        Arguments args;
+        args.values["operation"] = "normalize";
+        args.values["a"] = "1,0";
+        const Result r = worker.execute(args);
+        check(r.success, "normalize [1,0]: success");
+        check(r.value.find("1") != std::string::npos, "normalize [1,0]: contains 1");
+    }
+
+    // normalize([0,5]) = [0,1]
+    {
+        Arguments args;
+        args.values["operation"] = "normalize";
+        args.values["a"] = "0,5";
+        const Result r = worker.execute(args);
+        check(r.success, "normalize [0,5]: success");
+        check(r.value.find("1") != std::string::npos, "normalize [0,5]: contains 1");
+    }
+
+    // normalize([-3,-4]) = [-0.6,-0.8]
+    {
+        Arguments args;
+        args.values["operation"] = "normalize";
+        args.values["a"] = "-3,-4";
+        const Result r = worker.execute(args);
+        check(r.success, "normalize negative: success");
+        check(r.value.find("-0.6") != std::string::npos, "normalize negative: contains -0.6");
+        check(r.value.find("-0.8") != std::string::npos, "normalize negative: contains -0.8");
+    }
+
+    // normalize([5]) = [1]
+    {
+        Arguments args;
+        args.values["operation"] = "normalize";
+        args.values["a"] = "5";
+        const Result r = worker.execute(args);
+        check(r.success, "normalize single: success");
+        check(r.value.find("1") != std::string::npos, "normalize single: contains 1");
+    }
+
+    // normalize([0,0]) -> fail
+    {
+        Arguments args;
+        args.values["operation"] = "normalize";
+        args.values["a"] = "0,0";
+        const Result r = worker.execute(args);
+        check(!r.success, "normalize zero: fail");
+    }
+
+    // ---------- dot ----------
 
     // dot([1,2,3],[4,5,6]) = 32
     {
@@ -43,6 +108,8 @@ int main() {
         check(r.success, "dot: success");
         check(r.value == "32.000000", "dot: value == 32");
     }
+
+    // ---------- cosine ----------
 
     // cosine([1,0],[0,1]) = 0
     {
@@ -66,7 +133,9 @@ int main() {
         check(approxEqual(std::stod(r.value), 1.0), "cosine identical: == 1");
     }
 
-    // Ошибка: нет operation
+    // ---------- ошибки ----------
+
+    // Нет operation
     {
         Arguments args;
         args.values["a"] = "1,2";
@@ -74,7 +143,7 @@ int main() {
         check(!r.success, "missing operation: fail");
     }
 
-    // Ошибка: невалидное число
+    // Невалидное число
     {
         Arguments args;
         args.values["operation"] = "normalize";
@@ -83,7 +152,7 @@ int main() {
         check(!r.success, "invalid number: fail");
     }
 
-    // Ошибка: разные размерности
+    // Разные размерности
     {
         Arguments args;
         args.values["operation"] = "dot";
@@ -93,13 +162,30 @@ int main() {
         check(!r.success, "dimension mismatch: fail");
     }
 
-    // Ошибка: normalize нулевого вектора
+    // Нет a
     {
         Arguments args;
         args.values["operation"] = "normalize";
-        args.values["a"] = "0,0";
         const Result r = worker.execute(args);
-        check(!r.success, "zero vector: fail");
+        check(!r.success, "missing a: fail");
+    }
+
+    // Нет b для dot
+    {
+        Arguments args;
+        args.values["operation"] = "dot";
+        args.values["a"] = "1,2";
+        const Result r = worker.execute(args);
+        check(!r.success, "missing b: fail");
+    }
+
+    // Неизвестная операция
+    {
+        Arguments args;
+        args.values["operation"] = "banana";
+        args.values["a"] = "1,2";
+        const Result r = worker.execute(args);
+        check(!r.success, "unknown operation: fail");
     }
 
     std::cout << "\nTotal: " << g_passed << " passed, "
