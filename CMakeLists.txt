@@ -5,6 +5,12 @@ project(sader LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+option(ENABLE_COVERAGE "Build with coverage instrumentation" OFF)
+
+if(ENABLE_COVERAGE)
+    add_compile_options(--coverage -fprofile-arcs -ftest-coverage -fprofile-abs-path)
+    add_link_options(--coverage -lgcov)
+endif()
 
 find_package(OpenSSL REQUIRED)
 find_package(CURL REQUIRED)
