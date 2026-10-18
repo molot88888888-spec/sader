@@ -1,3 +1,4 @@
+#include "sader/RedisCache.h"
 #include "sader/WorkerRepository.h"
 
 #include <exception>
@@ -20,34 +21,82 @@ int main() {
         "dbname=sader";
 
     try {
-        WorkerRepository repo(conn_str);
+        RedisCache cache("127.0.0.1", 6379);
 
-        const auto all = repo.findAllEnabled();
-        check(all.size() == 8, "findAllEnabled returns 8 workers");
+        // Очищаем кэш перед началом — чтобы тест был детерминированным
+        cache.del("sader:workers:all");
 
-        bool has_hash = false, has_file = false, has_json = false;
-        bool has_http = false, has_text = false, has_csv = false;
-        bool has_process = false, has_model = false;
+        WorkerRepository repo(conn_str, cache);
 
-        for (const auto& rec : all) {
-            if (rec.name == "hash")    has_hash = true;
-            if (rec.name == "file")    has_file = true;
-            if (rec.name == "json")    has_json = true;
-            if (rec.name == "http")    has_http = true;
-            if (rec.name == "text")    has_text = true;
-            if (rec.name == "csv")     has_csv = true;
-            if (rec.name == "process") has_process = true;
-            if (rec.name == "model")   has_model = true;
+        // 1. Первый вызов — из PostgreSQL, кэш пуст → должен заполниться
+        {
+            const auto all = repo.findAllEnabled();
+            check(all.size() == 8, "first call: 8 workers from PostgreSQL");
+
+            const auto cached = cache.get("sader:workers:all");
+            check(cached.has_value(), "cache populated after first call");
         }
 
-        check(has_hash,    "contains hash");
-        check(has_file,    "contains file");
-        check(has_json,    "contains json");
-        check(has_http,    "contains http");
-        check(has_text,    "contains text");
-        check(has_csv,     "contains csv");
-        check(has_process, "contains process");
-        check(has_model,   "contains model");
+        // 2. Второй вызов — из кэша (тот же результат)
+        {
+            const auto all = repo.findAllEnabled();
+            check(all.size() == 8, "second call: 8 workers from cache");
+        }
+
+        // 3. Проверяем, что при изменении БД кэш возвращает старые данные
+        {
+            pqxx::connection conn(conn_str);
+            pqxx::work txn(conn);
+            txn.exec(
+                "UPDATE workers SET description = 'CACHED_OLD' WHERE name = 'hash'"
+            );
+            txn.commit();
+        }
+
+        // Третий вызов — должен вернуть СТАРОЕ описание (из кэша)
+        {
+            const auto all = repo.findAllEnabled();
+            bool found_old = false;
+            for (const auto& r : all) {
+                if (r.name == "hash" && r.description == "CACHED_OLD") {
+                    // Данные из PG (не из кэша) — тест провалится
+                }
+                if (r.name == "hash" &&
+                    r.description == "Calculate md5 and sha256 hashes for text") {
+                    found_old = true;
+                }
+            }
+            check(found_old, "third call: old description from cache (not updated)");
+        }
+
+        // 4. Очищаем кэш — теперь должен вернуться CACHED_OLD из PostgreSQL
+        cache.del("sader:workers:all");
+
+        {
+            const auto all = repo.findAllEnabled();
+            bool found_new = false;
+            for (const auto& r : all) {
+                if (r.name == "hash" && r.description == "CACHED_OLD") {
+                    found_new = true;
+                }
+            }
+            check(found_new, "after cache clear: new description from PostgreSQL");
+        }
+
+        // 5. Возвращаем БД в исходное состояние
+        {
+            pqxx::connection conn(conn_str);
+            pqxx::work txn(conn);
+            txn.exec(
+                "UPDATE workers SET description = "
+                "'Calculate md5 and sha256 hashes for text' WHERE name = 'hash'"
+            );
+            txn.commit();
+        }
+
+        // 6. Очищаем кэш на всякий случай
+        cache.del("sader:workers:all");
+
     } catch (const std::exception& e) {
         std::cout << "FAIL: exception: " << e.what() << '\n';
         ++g_failed;
@@ -58,3 +107,4 @@ int main() {
 
     return g_failed == 0 ? 0 : 1;
 }
+

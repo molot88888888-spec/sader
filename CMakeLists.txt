@@ -19,6 +19,8 @@ find_package(PostgreSQL REQUIRED)
 # libpqxx — отдельная библиотека, не входит в FindPostgreSQL
 find_library(PQXX_LIBRARY NAMES pqxx-8.0 pqxx REQUIRED)
 find_path(PQXX_INCLUDE_DIR NAMES pqxx/pqxx REQUIRED)
+# hiredis — C-клиент Redis
+find_library(HIREDIS_LIBRARY NAMES hiredis REQUIRED)
 
 # ---------- Основная программа ----------
 add_executable(sader
@@ -35,6 +37,7 @@ add_executable(sader
     src/ProcessWorker.cpp
     src/HttpWorker.cpp
     src/WorkerRepository.cpp
+    src/RedisCache.cpp
 )
 
 target_include_directories(sader PRIVATE include)
@@ -43,6 +46,7 @@ target_link_libraries(sader PRIVATE CURL::libcurl)
 target_include_directories(sader PRIVATE ${PQXX_INCLUDE_DIR})
 target_link_libraries(sader PRIVATE PostgreSQL::PostgreSQL)
 target_link_libraries(sader PRIVATE ${PQXX_LIBRARY})
+target_link_libraries(sader PRIVATE ${HIREDIS_LIBRARY})
 
 # ---------- Тест TextWorker ----------
 add_executable(test_textworker
@@ -109,8 +113,18 @@ target_link_libraries(test_httpworker PRIVATE CURL::libcurl)
 add_executable(test_workerrepository
     tests/test_workerrepository.cpp
     src/WorkerRepository.cpp
+    src/RedisCache.cpp
 )
 
 target_include_directories(test_workerrepository PRIVATE include ${PQXX_INCLUDE_DIR})
 target_link_libraries(test_workerrepository PRIVATE PostgreSQL::PostgreSQL)
 target_link_libraries(test_workerrepository PRIVATE ${PQXX_LIBRARY})
+target_link_libraries(test_workerrepository PRIVATE ${HIREDIS_LIBRARY})
+# ---------- Тест RedisCache ----------
+add_executable(test_rediscache
+    tests/test_rediscache.cpp
+    src/RedisCache.cpp
+)
+
+target_include_directories(test_rediscache PRIVATE include)
+target_link_libraries(test_rediscache PRIVATE ${HIREDIS_LIBRARY})
