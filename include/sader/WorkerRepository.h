@@ -1,5 +1,6 @@
 #pragma once
 
+#include "RedisCache.h"
 #include "WorkerRecord.h"
 
 #include <pqxx/pqxx>
@@ -8,18 +9,23 @@
 #include <vector>
 
 // WorkerRepository — доступ к таблице workers в PostgreSQL.
-// Владеет соединением с БД. RAII: соединение открывается
-// в конструкторе, закрывается в деструкторе (как ifstream).
+// При наличии RedisCache — кэширует результаты findAllEnabled (cache-aside).
 class WorkerRepository {
 public:
-    explicit WorkerRepository(const std::string& connection_string);
+    // Соединение с PostgreSQL + ссылка на кэш.
+    // cache_enabled = false — кэш отключён (полезно для тестов).
+    explicit WorkerRepository(
+        const std::string& connection_string,
+        RedisCache& cache,
+        bool cache_enabled = true
+    );
 
-    // Возвращает всех Worker'ов, у которых enabled = true,
-    // отсортированных по имени.
+    // Возвращает всех Worker'ов, у которых enabled = true.
+    // Сначала пробует кэш, при промахе — PostgreSQL, потом кладёт в кэш.
     std::vector<WorkerRecord> findAllEnabled() const;
 
 private:
-    // mutable — потому что pqxx::connection нужно мутировать
-    // при каждом запросе, а наши методы — const.
     mutable pqxx::connection connection_;
+    RedisCache& cache_;         // не владеет — ссылка
+    bool cache_enabled_;
 };
